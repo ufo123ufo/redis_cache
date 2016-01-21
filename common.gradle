@@ -1,0 +1,70 @@
+jar {
+    baseName = BASE_NAME
+    version =  VERSION
+    excludes = ["properties", "ibatis", "services"]
+    manifest {
+
+    }
+}
+
+task cleanBuild(type: Delete) {
+    delete 'dist'
+    delete 'release'
+}
+
+task copyJar(type: Copy) {
+    from 'build/libs'
+    into 'dist'
+}
+
+task copyDevResources(type: Copy) {
+    from 'src/main/resources'
+    into 'dist'
+}
+
+task copyTestResources(type: Copy) {
+    from 'build_config/test'
+    into 'dist'
+}
+
+task copyProdResources(type: Copy) {
+    from 'build_config/prod'
+    into 'dist'
+}
+
+task copyLibs(type: Copy) {
+    from 'libs'
+    from configurations.runtime
+    into 'dist/lib'
+}
+
+task tarDist(type: Zip) {
+    from 'dist'
+}
+
+task copyRelease(type: Copy) {
+    from 'build/distributions'
+    into 'release'
+}
+
+task releaseCommon << {
+    tasks.jar.execute()
+    tasks.cleanBuild.execute()
+    tasks.copyJar.execute()
+    tasks.copyDevResources.execute()
+    tasks.copyLibs.execute()
+}
+
+task releaseTest << {
+    tasks.releaseCommon.execute()
+    tasks.copyTestResources.execute()
+    tasks.tarDist.execute()
+    tasks.copyRelease.execute()
+}
+
+task releaseProd << {
+    tasks.releaseCommon.execute()
+    tasks.copyProdResources.execute()
+    tasks.tarDist.execute()
+    tasks.copyRelease.execute()
+}
